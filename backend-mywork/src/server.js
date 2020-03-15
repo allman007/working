@@ -14,8 +14,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const withDB = async (operations, res) => {
+  const client = new MongoClient(config.uri,  { useNewUrlParser: true, useUnifiedTopology: true });
   try { 
-    const client = new MongoClient(config.uri,  { useNewUrlParser: true, useUnifiedTopology: true });
     
     client.connect(async function(err, client) {
       if(err){
@@ -39,7 +39,7 @@ app.get('/test', function(req, res){
       if(err){
         console.log(err)
       }else{
-        console.log(data)
+        res.status(200).json(data)
       }
     })
   })
