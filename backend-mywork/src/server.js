@@ -23,12 +23,12 @@ const withDB = async (operations, res) => {
       } else {
         const db = client.db(config.dbname);
         await operations(db)
-        await client.close();
       }
     });
-
   } catch (error) {
     res.status(500).json({ message: "Error connecting to db", error });
+  } finally {
+    client.close();
   }
 };
 
