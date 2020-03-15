@@ -1,47 +1,49 @@
 const express = require("express");
 const port = 8000;
 const app = express();
-const mongodb = require("mongodb");
-// const bodyParser = require("body-parser");
+const MongoClient = require('mongodb').MongoClient;
+const config = require("./config");
 
-// app.use(bodyParser.json());
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// const articlesInfo = {
-//   "learn-react": {
-//     upvotes: 0,
-//     comments: []
-//   },
-//   "learn-node": {
-//     upvotes: 0,
-//     comments: []
-//   },
-//   "my-thoughts-on-resumes": {
-//     upvotes: 0,
-//     comments: []
-//   }
-// };
-
-// app.get("/hello", (req, res) => res.send("Hello!"));
-
-// app.post("/hello/:name", (req, res) => res.send(`Hello ${req.params.name}!`));
-
 const withDB = async (operations, res) => {
-  try {
-    const client = await mongodb.connect("mongodb://localhost:27017", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+  try { 
+    const client = new MongoClient(config.uri,  { useNewUrlParser: true, useUnifiedTopology: true });
+    
+    client.connect(async function(err, client) {
+      if(err){
+        operations(err)
+      } else {
+        const db = client.db(config.dbname);
+        await operations(db)
+        await client.close();
+      }
     });
-    const db = client.db("my-blog");
 
-    await operations(db);
-
-    client.close();
   } catch (error) {
     res.status(500).json({ message: "Error connecting to db", error });
   }
 };
+
+app.get('/test', function(req, res){
+  withDB(db => {
+    const article = db.collection('articles')
+    article.findOne({name:'mongo-cloud'}, function(err, data){
+      if(err){
+        console.log(err)
+      }else{
+        console.log(data)
+      }
+    })
+  })
+})
 
 app.get("/api/articles/:name", async (req, res) => {
   withDB(async db => {

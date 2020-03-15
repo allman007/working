@@ -14,20 +14,33 @@ const ArticlePage = ({ match }) => {
       const result = await fetch(`http://localhost:8000/api/articles/${name}`);
       const body = await result.json();
       console.log(body);
-
       setArticleInfo(body);
     };
     fetchData();
   }, [name]);
 
+  useEffect(() => {
+    updateArticleVote(article)
+  })
+
+  const updateArticleVote = function(articleToUpdate){
+    articleContent.find(article => {
+      if(article.name === articleToUpdate.name){
+        ++article.upvotes
+      }
+      return article
+    })
+    // console.log(article)
+  }
+
   if (!article) return <NotFoundPage />;
 
   const otherArticles = articleContent.filter(article => article.name !== name);
-
+  // console.log(articleInfo)
   return (
     <>
       <h1>{article.title}</h1>
-      <p>This post has been upvoted {articleInfo.upvotes} times</p>
+      <p>This post has been upvoted {article.upvotes} times</p>
       {article.content.map((paragraph, key) => (
         <p key={key}>{paragraph}</p>
       ))}
