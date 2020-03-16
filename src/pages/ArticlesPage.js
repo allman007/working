@@ -5,45 +5,48 @@ import articleContent from "./article-content";
 
 const ArticlePage = ({ match }) => {
   const name = match.params.name;
-  const article = articleContent.find(article => article.name === name);
-
-  const [articleInfo, setArticleInfo] = useState({ upvotes: 0, comments: [] });
-
+  let article = articleContent.find(article => article.name === name);
+  
+  const [upvoted, setUpvoted] = useState(0)
+  const [articleFromDB, setArticleFromDB] = useState({name:"", upvotes: 0, content: [] })
+  
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetch(`http://localhost:8000/api/articles/${name}`);
       const body = await result.json();
-      console.log(body);
-      setArticleInfo(body);
+      setArticleFromDB(body)
     };
     fetchData();
   }, [name]);
 
+
   useEffect(() => {
-    updateArticleVote(article)
-  })
+    const upVoteArticle = () => {
+      fetch(`http://localhost:8000/api/articles/${articleFromDB.name}/upvote`, {method: 'POST'})
+    }
+    if(articleFromDB.name !== "") upVoteArticle()
+    setUpvoted(1)
+  }, [upvoted, articleFromDB.name])
 
-  const updateArticleVote = function(articleToUpdate){
-    articleContent.find(article => {
-      if(article.name === articleToUpdate.name){
-        ++article.upvotes
-      }
-      return article
-    })
-    // console.log(article)
-  }
-
-  if (!article) return <NotFoundPage />;
+  if(!article) return <NotFoundPage />;
 
   const otherArticles = articleContent.filter(article => article.name !== name);
-  // console.log(articleInfo)
+
   return (
     <>
-      <h1>{article.title}</h1>
-      <p>This post has been upvoted {article.upvotes} times</p>
-      {article.content.map((paragraph, key) => (
-        <p key={key}>{paragraph}</p>
-      ))}
+      {/* this article will be from db when it displays */}
+      { articleFromDB.name === "" ? 
+        <p>loading...</p> : 
+        <>
+          <h1>{articleFromDB.title}</h1>
+          <p>This post has been upvoted {articleFromDB.upvotes} times</p>
+          {articleFromDB.content.map((paragraph, key) => (
+            <p key={key}>{paragraph}</p>
+          ))}
+        </> 
+      }
+      
+      {/* these article are not from db */}
       <h3>Other Articles:</h3>
       <ArticlesList articles={otherArticles} />
     </>
