@@ -12,9 +12,9 @@
     "react-dom": "^16.13.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0"
-  
   },
   "scripts": {
+    "postinstall": "cd backend-mywork && npm install",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
